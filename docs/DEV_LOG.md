@@ -3,3 +3,4 @@
 Automated and verified development entries.
 
 - `2026-08-05 10:15:00 +0530`: feat(chain): enhance node topology heartbeat validation
+- `2026-08-05 12:32:00 +0530`: fix(consensus): verify epoch transitions under network partition
