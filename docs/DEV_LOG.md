@@ -8,3 +8,4 @@ Automated and verified development entries.
 - `2026-08-05 16:26:00 +0530`: docs(specs): document ledger checkpoint consensus flow
 - `2026-08-05 18:43:00 +0530`: perf(sync): parallelize peer block signature verification
 - `2026-08-09 10:15:00 +0530`: test(sim): simulate latency spikes during block propagation
+- `2026-08-09 12:32:00 +0530`: feat(mempool): implement gas price priority queue ordering
