@@ -10,3 +10,4 @@ Automated and verified development entries.
 - `2026-08-09 10:15:00 +0530`: test(sim): simulate latency spikes during block propagation
 - `2026-08-09 12:32:00 +0530`: feat(mempool): implement gas price priority queue ordering
 - `2026-08-09 14:49:00 +0530`: fix(rpc): enforce json-rpc request payload size limits
+- `2026-08-12 10:15:00 +0530`: refactor(crypto): migrate signature verification to curve25519
