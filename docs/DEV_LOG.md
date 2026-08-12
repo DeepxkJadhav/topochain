@@ -12,3 +12,4 @@ Automated and verified development entries.
 - `2026-08-09 14:49:00 +0530`: fix(rpc): enforce json-rpc request payload size limits
 - `2026-08-12 10:15:00 +0530`: refactor(crypto): migrate signature verification to curve25519
 - `2026-08-12 12:32:00 +0530`: chore(config): update bootstrap peer topology matrix
+- `2026-08-12 14:49:00 +0530`: feat(chain): enhance node topology heartbeat validation
