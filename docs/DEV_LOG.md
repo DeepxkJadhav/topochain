@@ -26,3 +26,4 @@ Automated and verified development entries.
 - `2026-09-11 14:49:00 +0530`: fix(consensus): verify epoch transitions under network partition
 - `2026-09-11 16:26:00 +0530`: refactor(ledger): streamline state trie hash verification
 - `2026-10-07 10:15:00 +0530`: docs(specs): document ledger checkpoint consensus flow
+- `2026-10-07 12:32:00 +0530`: perf(sync): parallelize peer block signature verification
