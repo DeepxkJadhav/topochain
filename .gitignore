@@ -12,4 +12,6 @@ dist/
 build/
 .topochain/
 .test_demo_run/
+live_demo_project/
+*.db
 *.png
