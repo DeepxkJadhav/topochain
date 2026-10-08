@@ -68,7 +68,12 @@ class CodebaseExtractor:
 
             for file in files:
                 file_path = os.path.join(root, file)
-                rel_path = os.path.relpath(file_path, repo_path)
+                resolved_file = Path(file_path).resolve()
+                try:
+                    resolved_file.relative_to(repo_path)
+                except ValueError:
+                    continue  # Path traversal / escaping symlink detected; skip safely
+                rel_path = os.path.relpath(str(resolved_file), repo_path)
                 ext = Path(file).suffix.lower()
 
                 if ext in {".py", ".pyw"}:

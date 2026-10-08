@@ -1,0 +1,178 @@
+{
+  "A": {
+    "config_id": "A",
+    "name": "AST-only",
+    "weights": {
+      "ast_structural": 1.0,
+      "dependency": 0.0,
+      "semantic": 0.0,
+      "topology": 0.0,
+      "git_evolution": 0.0,
+      "runtime": 0.0
+    },
+    "accuracy": 0.2727272727272727,
+    "precision": 0.4,
+    "recall": 0.2857142857142857,
+    "f1": 0.3333333333333333,
+    "roc_auc": 0.4464285714285714,
+    "pr_auc": 0.720160791589363,
+    "fpr_refactors": 1.0,
+    "fnr_topology_preserving": 0.5,
+    "mean_latency_ms": 0.020427274814044886,
+    "total_evaluations": 11
+  },
+  "B": {
+    "config_id": "B",
+    "name": "Dependency-only",
+    "weights": {
+      "ast_structural": 0.0,
+      "dependency": 1.0,
+      "semantic": 0.0,
+      "topology": 0.0,
+      "git_evolution": 0.0,
+      "runtime": 0.0
+    },
+    "accuracy": 0.6363636363636364,
+    "precision": 1.0,
+    "recall": 0.42857142857142855,
+    "f1": 0.6,
+    "roc_auc": 0.7857142857142857,
+    "pr_auc": 0.8441558441558441,
+    "fpr_refactors": 0.0,
+    "fnr_topology_preserving": 1.0,
+    "mean_latency_ms": 0.020099999594756147,
+    "total_evaluations": 11
+  },
+  "C": {
+    "config_id": "C",
+    "name": "Semantic-only",
+    "weights": {
+      "ast_structural": 0.0,
+      "dependency": 0.0,
+      "semantic": 1.0,
+      "topology": 0.0,
+      "git_evolution": 0.0,
+      "runtime": 0.0
+    },
+    "accuracy": 0.6363636363636364,
+    "precision": 1.0,
+    "recall": 0.42857142857142855,
+    "f1": 0.6,
+    "roc_auc": 0.7142857142857143,
+    "pr_auc": 0.7922077922077921,
+    "fpr_refactors": 0.0,
+    "fnr_topology_preserving": 0.5,
+    "mean_latency_ms": 0.018063636327331715,
+    "total_evaluations": 11
+  },
+  "D": {
+    "config_id": "D",
+    "name": "Topology-only",
+    "weights": {
+      "ast_structural": 0.0,
+      "dependency": 0.0,
+      "semantic": 0.0,
+      "topology": 1.0,
+      "git_evolution": 0.0,
+      "runtime": 0.0
+    },
+    "accuracy": 0.36363636363636365,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "roc_auc": 0.5892857142857142,
+    "pr_auc": 0.7762832405689548,
+    "fpr_refactors": 0.0,
+    "fnr_topology_preserving": 1.0,
+    "mean_latency_ms": 0.0167909046550366,
+    "total_evaluations": 11
+  },
+  "E": {
+    "config_id": "E",
+    "name": "AST + Dependency",
+    "weights": {
+      "ast_structural": 0.5,
+      "dependency": 0.5,
+      "semantic": 0.0,
+      "topology": 0.0,
+      "git_evolution": 0.0,
+      "runtime": 0.0
+    },
+    "accuracy": 0.6363636363636364,
+    "precision": 1.0,
+    "recall": 0.42857142857142855,
+    "f1": 0.6,
+    "roc_auc": 0.7857142857142857,
+    "pr_auc": 0.9095238095238094,
+    "fpr_refactors": 0.0,
+    "fnr_topology_preserving": 0.5,
+    "mean_latency_ms": 0.017045452047816732,
+    "total_evaluations": 11
+  },
+  "F": {
+    "config_id": "F",
+    "name": "Dependency + Semantic",
+    "weights": {
+      "ast_structural": 0.0,
+      "dependency": 0.5,
+      "semantic": 0.5,
+      "topology": 0.0,
+      "git_evolution": 0.0,
+      "runtime": 0.0
+    },
+    "accuracy": 0.7272727272727273,
+    "precision": 1.0,
+    "recall": 0.5714285714285714,
+    "f1": 0.7272727272727273,
+    "roc_auc": 0.9285714285714286,
+    "pr_auc": 0.9480519480519478,
+    "fpr_refactors": 0.0,
+    "fnr_topology_preserving": 0.5,
+    "mean_latency_ms": 0.028336362447589636,
+    "total_evaluations": 11
+  },
+  "G": {
+    "config_id": "G",
+    "name": "Multimodal (No Topology)",
+    "weights": {
+      "ast_structural": 0.15,
+      "dependency": 0.4,
+      "semantic": 0.35,
+      "topology": 0.0,
+      "git_evolution": 0.1,
+      "runtime": 0.0
+    },
+    "accuracy": 0.6363636363636364,
+    "precision": 1.0,
+    "recall": 0.42857142857142855,
+    "f1": 0.6,
+    "roc_auc": 1.0,
+    "pr_auc": 1.0,
+    "fpr_refactors": 0.0,
+    "fnr_topology_preserving": 1.0,
+    "mean_latency_ms": 0.03037272571501407,
+    "total_evaluations": 11
+  },
+  "H": {
+    "config_id": "H",
+    "name": "Full Multimodal (With Topology)",
+    "weights": {
+      "ast_structural": 0.1,
+      "dependency": 0.3,
+      "semantic": 0.3,
+      "topology": 0.2,
+      "git_evolution": 0.1,
+      "runtime": 0.0
+    },
+    "accuracy": 0.45454545454545453,
+    "precision": 1.0,
+    "recall": 0.14285714285714285,
+    "f1": 0.25,
+    "roc_auc": 1.0,
+    "pr_auc": 1.0,
+    "fpr_refactors": 0.0,
+    "fnr_topology_preserving": 1.0,
+    "mean_latency_ms": 0.01650000393221324,
+    "total_evaluations": 11
+  }
+}

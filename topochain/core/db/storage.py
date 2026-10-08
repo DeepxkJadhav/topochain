@@ -1,5 +1,10 @@
 """
-SQLite database and storage manager for TopoChain baselines and commit topologies.
+SQLite database and storage manager for TopoChain.
+Implements Baseline Protection Architecture:
+- Immutable Known-Good Anchor
+- Historical Baseline Version Tracking
+- Explicit Trust Approval Gate (prevents auto-update poisoning)
+- Gradual Drift Poisoning Detection
 """
 
 import sqlite3
@@ -15,7 +20,7 @@ import numpy as np
 class StorageEngine:
     """
     Manages local SQLite database for topological state, embeddings, and baseline statistics.
-    Ensures safe connection closure across all platforms including Windows.
+    Enforces strict security governance against model poisoning and baseline manipulation.
     """
 
     def __init__(self, db_path: str = ".topochain/topochain.db"):
@@ -39,7 +44,19 @@ class StorageEngine:
                 id TEXT PRIMARY KEY,
                 name TEXT,
                 baseline_commit TEXT,
+                anchor_commit TEXT,
                 created_at TIMESTAMP
+            );
+            """)
+
+            conn.execute("""
+            CREATE TABLE IF NOT EXISTS trusted_anchors (
+                project_id TEXT PRIMARY KEY,
+                anchor_commit TEXT,
+                anchor_embedding BLOB,
+                approved_by TEXT,
+                created_at TIMESTAMP,
+                FOREIGN KEY(project_id) REFERENCES projects(id)
             );
             """)
 
@@ -66,6 +83,26 @@ class StorageEngine:
                 updated_at TIMESTAMP
             );
             """)
+
+            conn.execute("""
+            CREATE TABLE IF NOT EXISTS baseline_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id TEXT,
+                commit_hash TEXT,
+                drift_mean REAL,
+                drift_variance REAL,
+                sample_count INTEGER,
+                approved_by TEXT,
+                reason TEXT,
+                updated_at TIMESTAMP,
+                FOREIGN KEY(project_id) REFERENCES projects(id)
+            );
+            """)
+            # Schema migration check for existing databases
+            cur = conn.execute("PRAGMA table_info(projects)")
+            cols = {row["name"] for row in cur.fetchall()}
+            if "anchor_commit" not in cols:
+                conn.execute("ALTER TABLE projects ADD COLUMN anchor_commit TEXT;")
             conn.commit()
 
     @staticmethod
@@ -88,15 +125,53 @@ class StorageEngine:
             now = datetime.now(timezone.utc).isoformat()
             p_name = name or project_id
             conn.execute(
-                "INSERT INTO projects (id, name, baseline_commit, created_at) VALUES (?, ?, ?, ?)",
-                (project_id, p_name, None, now)
+                "INSERT INTO projects (id, name, baseline_commit, anchor_commit, created_at) VALUES (?, ?, ?, ?, ?)",
+                (project_id, p_name, None, None, now)
             )
             conn.execute(
                 "INSERT OR REPLACE INTO baseline_stats (project_id, drift_mean, drift_variance, sample_count, updated_at) VALUES (?, ?, ?, ?, ?)",
                 (project_id, 0.15, 0.005, 0, now)
             )
             conn.commit()
-            return {"id": project_id, "name": p_name, "baseline_commit": None, "created_at": now}
+            return {"id": project_id, "name": p_name, "baseline_commit": None, "anchor_commit": None, "created_at": now}
+
+    def set_trusted_anchor(
+        self,
+        project_id: str,
+        commit_hash: Optional[str] = None,
+        embedding: Optional[np.ndarray] = None,
+        approved_by: str = "security_lead",
+        anchor_commit: Optional[str] = None,
+        anchor_embedding: Optional[np.ndarray] = None
+    ):
+        """
+        Anchors the immutable known-good baseline reference for a project.
+        """
+        c_hash = commit_hash or anchor_commit or ""
+        emb = embedding if embedding is not None else (anchor_embedding if anchor_embedding is not None else np.zeros(64, dtype=np.float32))
+        now = datetime.now(timezone.utc).isoformat()
+        emb_blob = self._serialize_array(emb)
+        with self._connection() as conn:
+            conn.execute("""
+            INSERT OR REPLACE INTO trusted_anchors
+            (project_id, anchor_commit, anchor_embedding, approved_by, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """, (project_id, commit_hash, emb_blob, approved_by, now))
+
+            conn.execute("""
+            UPDATE projects SET anchor_commit = ? WHERE id = ?
+            """, (commit_hash, project_id))
+            conn.commit()
+
+    def get_trusted_anchor(self, project_id: str) -> Optional[Dict[str, Any]]:
+        with self._connection() as conn:
+            cur = conn.execute("SELECT * FROM trusted_anchors WHERE project_id = ?", (project_id,))
+            row = cur.fetchone()
+            if not row:
+                return None
+            d = dict(row)
+            d["anchor_embedding"] = self._deserialize_array(d["anchor_embedding"])
+            return d
 
     def record_commit(
         self,
@@ -121,6 +196,71 @@ class StorageEngine:
             """, (commit_hash, project_id, img_blob, emb_blob, drift_score, is_anomaly, diag_str, now))
             conn.commit()
         return True
+
+    def approve_baseline_update(
+        self,
+        project_id: str,
+        commit_hash: str,
+        new_mean: float,
+        new_variance: float,
+        sample_count: int,
+        approved_by: str = "security_engineer",
+        reason: str = "Verified benign architectural evolution"
+    ) -> bool:
+        """
+        Explicit trust decision required to update baseline statistics.
+        Prevents automated boiling-frog model poisoning.
+        """
+        now = datetime.now(timezone.utc).isoformat()
+        with self._connection() as conn:
+            # 1. Update current baseline
+            conn.execute("""
+            INSERT OR REPLACE INTO baseline_stats
+            (project_id, drift_mean, drift_variance, sample_count, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            """, (project_id, float(new_mean), max(1e-6, float(new_variance)), sample_count, now))
+
+            # 2. Record immutable history entry
+            conn.execute("""
+            INSERT INTO baseline_history
+            (project_id, commit_hash, drift_mean, drift_variance, sample_count, approved_by, reason, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (project_id, commit_hash, float(new_mean), float(new_variance), sample_count, approved_by, reason, now))
+
+            # 3. Update current baseline commit pointer
+            conn.execute("UPDATE projects SET baseline_commit = ? WHERE id = ?", (commit_hash, project_id))
+            conn.commit()
+        return True
+
+    def get_baseline_history(self, project_id: str, limit: int = 20) -> List[Dict[str, Any]]:
+        with self._connection() as conn:
+            cur = conn.execute(
+                "SELECT * FROM baseline_history WHERE project_id = ? ORDER BY updated_at DESC LIMIT ?",
+                (project_id, limit)
+            )
+            return [dict(r) for r in cur.fetchall()]
+
+    def detect_gradual_drift_poisoning(
+        self,
+        project_id: str,
+        current_embedding: np.ndarray,
+        poisoning_threshold: float = 0.55
+    ) -> Tuple[bool, float, Optional[str]]:
+        """
+        Calculates cumulative distance from the immutable trusted anchor.
+        Flags when accumulated slow drift exceeds boundary even if each step drift was small.
+        """
+        anchor = self.get_trusted_anchor(project_id)
+        if not anchor:
+            return False, 0.0, None
+
+        anchor_emb = anchor["anchor_embedding"]
+        cumulative_dist = float(np.linalg.norm(current_embedding - anchor_emb))
+
+        is_poisoning = cumulative_dist > poisoning_threshold
+        return is_poisoning, cumulative_dist, anchor["anchor_commit"]
+
+    is_drift_poisoning = detect_gradual_drift_poisoning
 
     def get_latest_commit(self, project_id: str) -> Optional[Dict[str, Any]]:
         with self._connection() as conn:
@@ -170,7 +310,7 @@ class StorageEngine:
             INSERT OR REPLACE INTO baseline_stats
             (project_id, drift_mean, drift_variance, sample_count, updated_at)
             VALUES (?, ?, ?, ?, ?)
-            """, (project_id, float(drift_mean), max(0.001, float(drift_variance)), sample_count, now))
+            """, (project_id, float(drift_mean), max(1e-6, float(drift_variance)), sample_count, now))
             conn.commit()
 
     def _row_to_commit_dict(self, row: sqlite3.Row) -> Dict[str, Any]:
