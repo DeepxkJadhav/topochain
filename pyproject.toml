@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "topochain"
+version = "0.1.0"
+description = "Topological Invariant Drift Detection for Software Supply Chain Integrity"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "TopoChain Contributors" }
+]
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "networkx>=3.0",
+    "torch>=2.0.0",
+    "ripser>=0.6.0",
+    "persim>=0.3.1",
+    "matplotlib>=3.7.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0",
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+    "tree-sitter>=0.20.0",
+    "tree-sitter-languages>=1.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.scripts]
+topochain = "topochain.cli.main:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["topochain*"]

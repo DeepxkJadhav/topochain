@@ -1,0 +1,35 @@
+name: TopoChain Supply Chain Verification
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install TopoChain
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run Test Suite
+        run: |
+          pytest tests -v
+
+      - name: Run TopoChain Integrity Verification
+        run: |
+          topochain init --repo . --name "${{ github.repository }}"
+          topochain scan --repo . --commit "${{ github.sha }}" --threshold 3.0 --visualize

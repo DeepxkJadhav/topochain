@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  topochain-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: topochain-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../.topochain:/app/.topochain
+    command: ["serve", "--host", "0.0.0.0", "--port", "8000"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
