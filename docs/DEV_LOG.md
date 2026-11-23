@@ -35,3 +35,4 @@ Automated and verified development entries.
 - `2026-11-19 23:54:22 +0530`: fix(rpc): enforce json-rpc request payload size limits
 - `2026-11-20 00:14:22 +0530`: feat(mempool): implement gas price priority queue ordering
 - `2026-11-23 10:35:12 +0530`: feat(chain): enhance node topology heartbeat validation
+- `2026-11-23 12:15:48 +0530`: fix(consensus): verify epoch transitions under network partition
