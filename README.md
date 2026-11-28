@@ -1,6 +1,8 @@
 <div align="center">
 
-# ⛓️ TopoChain
+<img src="assets/hero.svg" alt="TopoChain Multimodal Software Supply-Chain Integrity" width="100%" />
+
+<br/>
 
 **Multimodal Software Supply-Chain Integrity & Topological Drift Detection**
 
